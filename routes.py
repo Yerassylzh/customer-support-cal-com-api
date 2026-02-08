@@ -1,7 +1,7 @@
 """
 FastAPI route handlers for all endpoints.
 """
-from fastapi import APIRouter, Request, HTTPException
+from fastapi import APIRouter, Request, HTTPException, Depends
 from fastapi.responses import JSONResponse
 import requests
 from typing import Dict, Any, List
@@ -16,13 +16,14 @@ from models import (
 )
 from utils import vapi_response, handle_error
 from calcom_client import CalComClient
+from auth import verify_token
 
 router = APIRouter()
 client = CalComClient()
 
 
 @router.post("/cancel-appointment")
-async def cancel_appointment_endpoint(request: Request):
+async def cancel_appointment_endpoint(request: Request, authenticated: bool = Depends(verify_token)):
     """Cancel an appointment."""
     try:
         payload = await request.json()
@@ -57,7 +58,7 @@ async def cancel_appointment_endpoint(request: Request):
 
 
 @router.post("/get-available-slots")
-async def get_available_slots_endpoint(request: Request):
+async def get_available_slots_endpoint(request: Request, authenticated: bool = Depends(verify_token)):
     """Get available slots for an event type."""
     try:
         payload = await request.json()
@@ -94,7 +95,7 @@ async def get_available_slots_endpoint(request: Request):
 
 
 @router.post("/get-upcoming-appointments")
-async def get_upcoming_appointments_endpoint(request: Request):
+async def get_upcoming_appointments_endpoint(request: Request, authenticated: bool = Depends(verify_token)):
     """Get upcoming appointments for a patient."""
     try:
         payload = await request.json()
@@ -146,7 +147,7 @@ async def get_upcoming_appointments_endpoint(request: Request):
 
 
 @router.post("/create-booking")
-async def create_booking_endpoint(request: Request):
+async def create_booking_endpoint(request: Request, authenticated: bool = Depends(verify_token)):
     """Create a new booking."""
     try:
         payload = await request.json()
@@ -192,7 +193,7 @@ async def create_booking_endpoint(request: Request):
 
 
 @router.post("/get-event-types")
-async def get_event_types_endpoint(request: Request):
+async def get_event_types_endpoint(request: Request, authenticated: bool = Depends(verify_token)):
     """Get event types for a team."""
     try:
         payload = await request.json()

@@ -9,6 +9,10 @@ CALCOM_API_KEY = os.getenv("CALCOM_API_KEY")
 if not CALCOM_API_KEY:
     raise ValueError("CALCOM_API_KEY environment variable is required")
 
+API_AUTH_TOKEN = os.getenv("API_AUTH_TOKEN")
+if not API_AUTH_TOKEN:
+    raise ValueError("API_AUTH_TOKEN environment variable is required")
+
 # API Configuration
 API_VERSION = "2024-09-04"
 BASE_URL = "https://api.cal.com/v2"
