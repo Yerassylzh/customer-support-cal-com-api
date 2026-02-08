@@ -199,7 +199,7 @@ async def get_event_types_endpoint(request: Request, authenticated: bool = Depen
                 continue
             services.append({
                 "id": event_id,
-                "lengthInMinutes": event.get("length"),
+                "lengthInMinutes": event.get("lengthInMinutes"),
                 "title": event.get("title", "Unnamed service"),
                 "slug": event.get("slug", ""),
                 "description": event.get("description", "").strip() or ""
