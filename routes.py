@@ -2,19 +2,17 @@
 FastAPI route handlers for all endpoints.
 """
 from fastapi import APIRouter, Request, HTTPException, Depends
-from fastapi.responses import JSONResponse
 import requests
 from typing import Dict, Any, List
 
 from models import (
-    VapiRequest,
     CancelAppointmentParams,
     GetAvailableSlotsParams,
     GetUpcomingAppointmentsParams,
     CreateBookingParams,
     GetEventTypesParams
 )
-from utils import vapi_response, handle_error
+from utils import success_response, error_response
 from calcom_client import CalComClient
 from auth import verify_token
 
@@ -27,8 +25,7 @@ async def cancel_appointment_endpoint(request: Request, authenticated: bool = De
     """Cancel an appointment."""
     try:
         payload = await request.json()
-        vapi_req = VapiRequest(**payload)
-        params = CancelAppointmentParams(**vapi_req.parameters)
+        params = CancelAppointmentParams(**payload)
 
         data = client.cancel_appointment(
             booking_id=params.booking_id,
@@ -36,23 +33,21 @@ async def cancel_appointment_endpoint(request: Request, authenticated: bool = De
         )
 
         if data.get("status") != "success":
-            return handle_error(vapi_req.toolCallId, "Cancellation failed - API did not return success")
+            error_response("Cancellation failed - API did not return success")
 
         booking = data.get("data", {})
-        result = {
-            "success": True,
+        return success_response({
             "id": booking.get("id"),
             "uid": booking.get("uid"),
             "status": booking.get("status"),
             "title": booking.get("title"),
             "message": "Appointment successfully cancelled"
-        }
-        return vapi_response(vapi_req.toolCallId, result)
+        })
 
     except requests.RequestException as e:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Cancellation failed: {str(e)}")
+        error_response(f"Cancellation failed: {str(e)}")
     except ValueError as ve:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Invalid input: {str(ve)}", 422)
+        error_response(f"Invalid input: {str(ve)}", 422)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -62,8 +57,7 @@ async def get_available_slots_endpoint(request: Request, authenticated: bool = D
     """Get available slots for an event type."""
     try:
         payload = await request.json()
-        vapi_req = VapiRequest(**payload)
-        params = GetAvailableSlotsParams(**vapi_req.parameters)
+        params = GetAvailableSlotsParams(**payload)
 
         data = client.get_available_slots(
             event_type_id=params.event_type_id,
@@ -76,20 +70,18 @@ async def get_available_slots_endpoint(request: Request, authenticated: bool = D
         )
 
         if data.get("status") != "success":
-            return handle_error(vapi_req.toolCallId, "API returned non-success status")
+            error_response("API returned non-success status")
 
         slots = data.get("data", {})
-        result = {
-            "success": True,
+        return success_response({
             "slots": slots,
             "total_dates": len(slots)
-        }
-        return vapi_response(vapi_req.toolCallId, result)
+        })
 
     except requests.RequestException as e:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Request failed: {str(e)}")
+        error_response(f"Request failed: {str(e)}")
     except ValueError as ve:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Invalid input: {str(ve)}", 422)
+        error_response(f"Invalid input: {str(ve)}", 422)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -99,8 +91,7 @@ async def get_upcoming_appointments_endpoint(request: Request, authenticated: bo
     """Get upcoming appointments for a patient."""
     try:
         payload = await request.json()
-        vapi_req = VapiRequest(**payload)
-        params = GetUpcomingAppointmentsParams(**vapi_req.parameters)
+        params = GetUpcomingAppointmentsParams(**payload)
 
         data = client.get_upcoming_appointments(
             patient_email=params.patient_email,
@@ -109,7 +100,7 @@ async def get_upcoming_appointments_endpoint(request: Request, authenticated: bo
         )
 
         if data.get("status") != "success":
-            return handle_error(vapi_req.toolCallId, "API returned non-success status")
+            error_response("API returned non-success status")
 
         bookings_raw = data.get("data", [])
         appointments: List[Dict[str, Any]] = []
@@ -131,17 +122,15 @@ async def get_upcoming_appointments_endpoint(request: Request, authenticated: bo
                 "createdAt": b.get("createdAt")
             })
 
-        result = {
-            "success": True,
+        return success_response({
             "appointments": appointments,
             "total_found": len(appointments)
-        }
-        return vapi_response(vapi_req.toolCallId, result)
+        })
 
     except requests.RequestException as e:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Request failed: {str(e)}")
+        error_response(f"Request failed: {str(e)}")
     except ValueError as ve:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Invalid input: {str(ve)}", 422)
+        error_response(f"Invalid input: {str(ve)}", 422)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -151,8 +140,7 @@ async def create_booking_endpoint(request: Request, authenticated: bool = Depend
     """Create a new booking."""
     try:
         payload = await request.json()
-        vapi_req = VapiRequest(**payload)
-        params = CreateBookingParams(**vapi_req.parameters)
+        params = CreateBookingParams(**payload)
 
         data = client.create_booking(
             event_type_id=params.event_type_id,
@@ -163,11 +151,10 @@ async def create_booking_endpoint(request: Request, authenticated: bool = Depend
         )
 
         if data.get("status") != "success":
-            return handle_error(vapi_req.toolCallId, "Booking failed - API did not return success")
+            error_response("Booking failed - API did not return success")
 
         booking = data.get("data", {})
-        result = {
-            "success": True,
+        return success_response({
             "message": "Appointment successfully booked",
             "booking": {
                 "uid": booking.get("uid"),
@@ -181,13 +168,12 @@ async def create_booking_endpoint(request: Request, authenticated: bool = Depend
                     "email": params.attendee_email
                 }
             }
-        }
-        return vapi_response(vapi_req.toolCallId, result)
+        })
 
     except requests.RequestException as e:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Booking request failed: {str(e)}")
+        error_response(f"Booking request failed: {str(e)}")
     except ValueError as ve:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Invalid input: {str(ve)}", 422)
+        error_response(f"Invalid input: {str(ve)}", 422)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -197,15 +183,14 @@ async def get_event_types_endpoint(request: Request, authenticated: bool = Depen
     """Get event types for a team."""
     try:
         payload = await request.json()
-        vapi_req = VapiRequest(**payload)
-        params = GetEventTypesParams(**vapi_req.parameters)
+        params = GetEventTypesParams(**payload)
 
         # Use team_id from request parameters
         data = client.get_event_types(team_id=params.team_id)
 
         event_types = data.get("data") or data.get("event_types") or []
         if not isinstance(event_types, list):
-            return handle_error(vapi_req.toolCallId, "Unexpected API response format")
+            error_response("Unexpected API response format")
 
         services = []
         for event in event_types:
@@ -220,17 +205,15 @@ async def get_event_types_endpoint(request: Request, authenticated: bool = Depen
                 "description": event.get("description", "").strip() or ""
             })
 
-        result = {
-            "success": True,
+        return success_response({
             "services": services,
             "total": len(services)
-        }
-        return vapi_response(vapi_req.toolCallId, result)
+        })
 
     except requests.RequestException as e:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"API request failed: {str(e)}")
+        error_response(f"API request failed: {str(e)}")
     except ValueError as ve:
-        return handle_error(vapi_req.toolCallId if 'vapi_req' in locals() else "unknown", f"Invalid input: {str(ve)}", 422)
+        error_response(f"Invalid input: {str(ve)}", 422)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

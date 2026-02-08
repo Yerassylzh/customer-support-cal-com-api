@@ -1,14 +1,8 @@
 """
 Pydantic models for request validation.
 """
-from typing import Dict, Any, Optional
+from typing import Optional
 from pydantic import BaseModel, Field
-
-
-class VapiRequest(BaseModel):
-    """Base request structure from Vapi."""
-    toolCallId: str
-    parameters: Dict[str, Any]
 
 
 class CancelAppointmentParams(BaseModel):
