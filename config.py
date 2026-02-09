@@ -14,9 +14,9 @@ if not API_AUTH_TOKEN:
     raise ValueError("API_AUTH_TOKEN environment variable is required")
 
 # API Configuration
-API_VERSION = "2024-09-04"
+API_VERSION = "2024-08-13"
 BASE_URL = "https://api.cal.com/v2"
-CLINIC_TIMEZONE = "Asia/Almaty"
+CLINIC_TIMEZONE = "Asia/Qyzylorda"
 
 
 def get_headers() -> Dict[str, str]:
