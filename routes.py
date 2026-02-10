@@ -218,6 +218,57 @@ async def get_event_types_endpoint(request: Request, authenticated: bool = Depen
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/query-knowledge-base")
+async def query_knowledge_base_endpoint(request: Request, authenticated: bool = Depends(verify_token)):
+    """Query the knowledge base - returns content from knowledge_base.md file."""
+    import os
+    
+    try:
+        # Read the knowledge base markdown file
+        kb_file_path = os.path.join(os.path.dirname(__file__), "knowledge_base.md")
+        
+        if not os.path.exists(kb_file_path):
+            error_response(
+                "Knowledge base file not found. Please create 'knowledge_base.md' in the project directory.",
+                404
+            )
+        
+        with open(kb_file_path, "r", encoding="utf-8") as f:
+            knowledge_content = f.read()
+        
+        return success_response({
+            "content": knowledge_content,
+            "source": "knowledge_base.md"
+        })
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/clinic-info")
+async def get_clinic_info(authenticated: bool = Depends(verify_token)):
+    """Get current clinic information including date, time, and timezone."""
+    from datetime import datetime
+    from config import CLINIC_TIMEZONE
+    import pytz
+    
+    try:
+        # Get current time in clinic timezone
+        clinic_tz = pytz.timezone(CLINIC_TIMEZONE)
+        current_time = datetime.now(clinic_tz)
+        
+        return success_response({
+            "current_datetime": current_time.strftime("%Y-%m-%d %H:%M:%S"),
+            "timezone": CLINIC_TIMEZONE,
+            "timezone_offset": current_time.strftime("%z"),
+            "day_of_week": current_time.strftime("%A"),
+            "formatted": current_time.strftime("%A, %B %d, %Y at %I:%M %p %Z")
+        })
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/health")
 def health():
     """Health check endpoint."""
