@@ -14,15 +14,17 @@ if not API_AUTH_TOKEN:
     raise ValueError("API_AUTH_TOKEN environment variable is required")
 
 # API Configuration
-API_VERSION = "2024-08-13"
+
+AVAILABLE_SLOTS_API_VERSION = "2024-09-04"
+BOOKINGS_API_VERSION = "2024-08-13"
 BASE_URL = "https://api.cal.com/v2"
 CLINIC_TIMEZONE = "Asia/Qyzylorda"
 
 
-def get_headers() -> Dict[str, str]:
+def get_headers(isSlots: bool) -> Dict[str, str]:
     """Get headers for Cal.com API requests."""
     return {
         "Authorization": f"Bearer {CALCOM_API_KEY}",
-        "cal-api-version": API_VERSION,
+        "cal-api-version": (AVAILABLE_SLOTS_API_VERSION if isSlots else BOOKINGS_API_VERSION),
         "Content-Type": "application/json",
     }

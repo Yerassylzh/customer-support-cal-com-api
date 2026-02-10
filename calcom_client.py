@@ -11,7 +11,8 @@ class CalComClient:
     
     def __init__(self):
         self.base_url = BASE_URL
-        self.headers = get_headers()
+        self.slots_headers = get_headers(isSlots=True)
+        self.default_headers = get_headers(isSlots=False)
     
     def cancel_appointment(
         self, 
@@ -27,7 +28,7 @@ class CalComClient:
             endpoint = f"{self.base_url}/bookings/{booking_id_int}/cancel"
         
         body = {"cancellationReason": cancellation_reason}
-        response = requests.post(endpoint, headers=self.headers, json=body, timeout=12)
+        response = requests.post(endpoint, headers=self.default_headers, json=body, timeout=12)
         response.raise_for_status()
         return response.json()
     
@@ -55,7 +56,7 @@ class CalComClient:
             query_params["duration"] = duration
         
         url = f"{self.base_url}/slots"
-        response = requests.get(url, headers=self.headers, params=query_params, timeout=15)
+        response = requests.get(url, headers=self.slots_headers, params=query_params, timeout=15)
         response.raise_for_status()
         return response.json()
     
@@ -77,7 +78,7 @@ class CalComClient:
         
         response = requests.get(
             f"{self.base_url}/bookings", 
-            headers=self.headers, 
+            headers=self.default_headers, 
             params=query_params, 
             timeout=12
         )
@@ -106,7 +107,7 @@ class CalComClient:
         
         response = requests.post(
             f"{self.base_url}/bookings", 
-            headers=self.headers, 
+            headers=self.default_headers, 
             json=body, 
             timeout=15
         )
@@ -116,6 +117,6 @@ class CalComClient:
     def get_event_types(self, team_id: int) -> Dict[str, Any]:
         """Get event types for a specific team."""
         url = f"{self.base_url}/teams/{team_id}/event-types"
-        response = requests.get(url, headers=self.headers, timeout=10)
+        response = requests.get(url, headers=self.default_headers, timeout=10)
         response.raise_for_status()
         return response.json()
