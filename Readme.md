@@ -137,6 +137,49 @@ Send parameters directly in the request body:
 
 ---
 
+### 6. Query Knowledge Base
+
+**Endpoint:** `POST /query-knowledge-base`
+
+Returns the entire content of the `knowledge_base.md` file.
+
+```json
+{}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "content": "...entire markdown content...",
+  "source": "knowledge_base.md"
+}
+```
+
+---
+
+### 7. Get Clinic Info
+
+**Endpoint:** `GET /clinic-info`
+
+Returns current date, time, and timezone information for the clinic.
+
+**No request body needed (GET request)**
+
+**Response:**
+```json
+{
+  "success": true,
+  "current_datetime": "2026-02-12 21:18:34",
+  "timezone": "Asia/Almaty",
+  "timezone_offset": "+0500",
+  "day_of_week": "Wednesday",
+  "formatted": "Wednesday, February 12, 2026 at 09:18 PM +05"
+}
+```
+
+---
+
 ## Testing with cURL
 
 ```bash

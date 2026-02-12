@@ -113,7 +113,6 @@ async def get_upcoming_appointments_endpoint(request: Request, authenticated: bo
                 "end": b.get("end"),
                 "status": b.get("status"),
                 "eventTypeId": b.get("eventTypeId"),
-                "eventTypeTitle": b.get("eventType", {}).get("title"),
                 "description": b.get("description"),
                 "attendees": [
                     {"name": a.get("name"), "email": a.get("email"), "timeZone": a.get("timeZone")}
